@@ -68,98 +68,110 @@ def get_nuclearPlant():
 
             soup = BeautifulSoup(response.text, 'html.parser')
 
-            viewstate = soup.select_one("input[name='__VIEWSTATE']")["value"]
-            event_validation = soup.select_one("input[name='__EVENTVALIDATION']")["value"]
+            links = soup.find_all('a', {"id": re.compile("^MainContent_MainContent_rptCountryReactors_hypReactorName_")})
 
-            post_data = {
-                "__EVENTTARGET": "ctl00$ctl00$MainContent$MainContent$rptCountryReactors$ctl01$hypReactorName",
-                "__EVENTARGUMENT": "",
-                "__VIEWSTATE": viewstate,
-                "__EVENTVALIDATION": event_validation,
-            }
+            for link in links:
+                href = link["href"]
+                if "javascript:__doPostBack" in href:
+                    
+                    event_target = href.split("'")[1]
 
-            post_response = session.post(url_country, data=post_data)
+                    viewstate = soup.select_one("input[name='__VIEWSTATE']")["value"]
+                    event_validation = soup.select_one("input[name='__EVENTVALIDATION']")["value"]
 
-            print("URL Final:", post_response.url)
+                    post_data = {
+                        "__EVENTTARGET": event_target,
+                        "__EVENTARGUMENT": "",
+                        "__VIEWSTATE": viewstate,
+                        "__EVENTVALIDATION": event_validation,
+                    }
+
+                post_response = session.post(url_country, data=post_data)
+
+                get_nuclearPlantAnnualData(post_response.url)
 
         else:
             
             print(f"Error al acceder a la página: {response.status_code}")
         
-        time.sleep(2)
+        time.sleep(1)
+
+    print("AnualData Updated")
 
 
 
+def get_nuclearPlantAnnualData(url):
 
-def get_nuclearPlantData():
-
-    url = 'https://pris.iaea.org/PRIS/CountryStatistics/ReactorDetails.aspx?current=1078'
+   
 
     response = session.get(url)
 
     if response.status_code == 200:
 
         soup = BeautifulSoup(response.text, 'html.parser')
-
-        reactor_name = soup.find('span', {'id': 'MainContent_MainContent_lblReactorName'}).text
-
-        table = soup.find('table', {'class': 'active'})
-
-        rows = table.find_all('tr')
-
-        final_headers = []
-        headers = rows[0].find_all('th')
-        sub_headers = rows[1].find_all('th')
-        n_cols = 0
-
-        data = []
-
-        for header in headers:
-
-            if header.get('colspan'):
-
-                for i in range(n_cols, n_cols + int(header.get('colspan'))):
-                    if i < len(sub_headers):
-                        final_headers.append(f'{header.get_text(strip=True)}_{sub_headers[i].get_text(strip=True)}')
-                
-                n_cols = n_cols + int(header.get('colspan'))
-            else:
-                final_headers.append(header.get_text(strip=True))
+        ReactorStatus = soup.find('span',{"id": "MainContent_MainContent_lblReactorStatus"}).text
+        ReactorName = soup.find('span', {'id': 'MainContent_MainContent_lblReactorName'}).text
 
 
-        with open(f'{reactor_name}_AnualData.json', "w") as f:
-            f.write("")
+        if ReactorStatus == "Under Construction":
 
-        keys = final_headers
+            with open(f'AnualData/{ReactorName}_AnualData.json', "w") as f:
+                json.dump([{}], f, indent=4)
 
-        for row in rows[2:]:
+        else:
 
-            cells = row.find_all('td')
+            table = soup.find('table', {'class': 'active'})
 
-            row_data = []
+            rows = table.find_all('tr')
 
-            for cell in cells:
+            final_headers = []
+            headers = rows[0].find_all('th')
+            sub_headers = rows[1].find_all('th')
+            n_cols = 0
 
-                if cell.get('colspan'):
+            data = []
 
-                    for i in range(int(cell.get('colspan'))):
+            for header in headers:
+
+                if header.get('colspan'):
+
+                    for i in range(n_cols, n_cols + int(header.get('colspan'))):
+                        if i < len(sub_headers):
+                            final_headers.append(f'{header.get_text(strip=True)}_{sub_headers[i].get_text(strip=True)}')
+                    
+                    n_cols = n_cols + int(header.get('colspan'))
+                else:
+                    final_headers.append(header.get_text(strip=True))
+
+            keys = final_headers
+
+            for row in rows[2:]:
+
+                cells = row.find_all('td')
+
+                row_data = []
+
+                for cell in cells:
+
+                    if cell.get('colspan'):
+
+                        for i in range(int(cell.get('colspan'))):
+                            row_data.append(cell.get_text(strip=True))
+
+                    else:
+
                         row_data.append(cell.get_text(strip=True))
 
-                else:
+                data.append(row_data)
 
-                    row_data.append(cell.get_text(strip=True))
-
-            data.append(row_data)
-
-        for row in data:
-        
-            data_dicts = [dict(zip(keys, row)) for row in data]
-
-            with open(f'{reactor_name}_AnualData.json', "w") as f:
-                json.dump(data_dicts, f, indent=4)
+            for row in data:
+            
+                data_dicts = [dict(zip(keys, row)) for row in data]
+                with open(f'AnualData/{ReactorName}_AnualData.json', "w") as f:
+                    json.dump(data_dicts, f, indent=4)
 
     else:
         print(f"Error al acceder a la página: {response.status_code}")
 
 
-get_nuclearPlantData()
+get_nuclearPlant()
