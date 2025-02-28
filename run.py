@@ -1,12 +1,11 @@
 import ssl
 import re
+import os
 import requests
 import time
 from urllib3.poolmanager import PoolManager
 from requests.adapters import HTTPAdapter
 from bs4 import BeautifulSoup
-
-
 import json
 
 context = ssl.create_default_context()
@@ -20,8 +19,6 @@ class SSLAdapter(HTTPAdapter):
 session = requests.Session()
 adapter = SSLAdapter()
 session.mount('https://', adapter)
-
-
 
 def get_countries():
 
@@ -50,7 +47,6 @@ def get_countries():
     with open('countries.json', "w") as f:
                 json.dump(data_dicts, f, indent=4)
 
-
 def get_nuclearPlant():
 
     url = 'https://pris.iaea.org/'
@@ -58,17 +54,25 @@ def get_nuclearPlant():
     with open('countries.json', "r") as f:
         countries = json.load(f)
     
+    index = 0
+
     for country, path in countries.items():     
 
         url_country = url + path
 
         response = session.get(url_country)
 
+        os.makedirs(f"data/{country}", exist_ok=True)
+
         if response.status_code == 200:
 
             soup = BeautifulSoup(response.text, 'html.parser')
 
             links = soup.find_all('a', {"id": re.compile("^MainContent_MainContent_rptCountryReactors_hypReactorName_")})
+
+            for nuclearPlantName in links:
+                
+                os.makedirs(f'data/{country}/{nuclearPlantName.get_text(strip=True)}', exist_ok=True)
 
             for link in links:
                 href = link["href"]
@@ -87,22 +91,79 @@ def get_nuclearPlant():
                     }
 
                 post_response = session.post(url_country, data=post_data)
+                
+                get_nuclearPlantAnnualData(post_response.url, country)
+                get_nuclearPlantInfo(post_response.url, country)
 
-                get_nuclearPlantAnnualData(post_response.url)
+                index = index + 1
+
+                print(f'{country} Data Uploaded ... ({index}/{len(country)})')
 
         else:
             
             print(f"Error al acceder a la página: {response.status_code}")
         
-        time.sleep(1)
-
     print("AnualData Updated")
 
+def get_nuclearPlantInfo(url, country):
 
 
-def get_nuclearPlantAnnualData(url):
+    response = session.get(url)
+        
+    if response.status_code == 200:
+            
+        soup = BeautifulSoup(response.text, 'html.parser')
 
-   
+        ReactorStatus = soup.find('span',{"id": "MainContent_MainContent_lblReactorStatus"}).text
+        ReactorName = str(soup.find('span', {'id': 'MainContent_MainContent_lblReactorName'}).text).rstrip()
+        table = soup.find('table', {'class': 'layout'})
+
+        rows = table.find_all('tr')
+
+        final_headers=['Reactor Name', 'Reactor Status', 'Country',
+                        'Reactor Type', 'Model', 'Owner', 'Operator', 
+                       'Reference Unit Power (Net Capacity) [MWe]', 'Design Net Capacity [MWe]', 'Gross Capacity [MWe]', 'Thernmal Capacity [MWt]', 
+                       'Construcion Start Date', 'First Criticality Date', 'Construction Suspended Date', 'Construction Restart Date',
+                       'First Grid Connection', 'Commercial Operation Date', 'Suspended Operation Date', 'End of Suspended Operation Date',
+                       'Permanent Shutdown Date']
+        data = []
+
+        data.append(ReactorName)
+        data.append(ReactorStatus)
+        data.append(country)
+
+        keys = final_headers
+
+        index = 1
+        
+        
+        while index < len(rows):
+            headers = rows[index].find_all('td')  
+
+
+            for header in headers:
+
+                data.append(header.get_text(strip=True))
+    
+            index += 2
+        
+        data_dicts = dict(zip(keys, data))
+
+        cleaned_data = {}
+
+        for key, value in data_dicts.items():
+
+            if isinstance(value, str) and (value.endswith("MWe") or value.endswith("MWt")): 
+                match = re.match(r"(\d+)", value) 
+                cleaned_data[key] = match.group(1)
+            else:
+                cleaned_data[key] = value
+
+        with open(f'data/{country}/{ReactorName}/{ReactorName}_data.json', "w") as f:
+            json.dump(cleaned_data, f, indent=4)
+            
+def get_nuclearPlantAnnualData(url,country):
+
 
     response = session.get(url)
 
@@ -110,12 +171,11 @@ def get_nuclearPlantAnnualData(url):
 
         soup = BeautifulSoup(response.text, 'html.parser')
         ReactorStatus = soup.find('span',{"id": "MainContent_MainContent_lblReactorStatus"}).text
-        ReactorName = soup.find('span', {'id': 'MainContent_MainContent_lblReactorName'}).text
-
+        ReactorName = str(soup.find('span', {'id': 'MainContent_MainContent_lblReactorName'}).text).rstrip()
 
         if ReactorStatus == "Under Construction":
 
-            with open(f'AnualData/{ReactorName}_AnualData.json', "w") as f:
+            with open(f'data/{country}/{str(ReactorName).lstrip()}/{str(ReactorName).lstrip()}_AnualData.json', "w") as f:
                 json.dump([{}], f, indent=4)
 
         else:
@@ -165,13 +225,13 @@ def get_nuclearPlantAnnualData(url):
                 data.append(row_data)
 
             for row in data:
-            
                 data_dicts = [dict(zip(keys, row)) for row in data]
-                with open(f'AnualData/{ReactorName}_AnualData.json', "w") as f:
+                with open(f'data/{country}/{str(ReactorName).lstrip()}/{str(ReactorName).lstrip()}_AnualData.json', "w") as f:
                     json.dump(data_dicts, f, indent=4)
+
+
 
     else:
         print(f"Error al acceder a la página: {response.status_code}")
-
 
 get_nuclearPlant()
