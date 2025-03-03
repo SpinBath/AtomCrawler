@@ -2,5 +2,6 @@
 
 src/data/*
 !src/data
+!src/data/data.rar
 
 /countries.json
