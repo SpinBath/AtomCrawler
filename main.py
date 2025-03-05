@@ -1,5 +1,5 @@
 import os
-from src.scraping import get_countries, get_nuclearPlant
+from src.scraping import get_Urls, get_nuclearPlantInfo, get_nuclearPlantAnnualData
 
 logo = ('''
             ┏┓      ┏┓       ┓    
@@ -11,12 +11,12 @@ def scraping_menu():
 
     print(f''' {logo} 
           
-    Choose an option (1-5):       
+    Choose an option (1-6):       
           
-        1. Get Countries URLs
-        2. Get Nuclear Plant Data
-        3. Get Nuclear Plant General Data
-        4. Get Nuclear Plant Annual Data
+        1. Get Countries and Nuclear Plant URLs
+        2. Get Nuclear Plant Data (General)
+        3. Get Nuclear Plant Data (Annual)
+        4. Get Nuclear Plant Data (All)
         5. <-- 
         6. Exit''')
 
@@ -24,13 +24,14 @@ def scraping_menu():
         option = input(">> ")
 
         if option == "1":
-            get_countries()
+            get_Urls()
         elif option == "2":
-            get_nuclearPlant()
+            get_nuclearPlantInfo()
         elif option == "3":
-            exit()
+            get_nuclearPlantAnnualData()
         elif option == "4":
-            exit()
+            get_nuclearPlantInfo()
+            get_nuclearPlantAnnualData()
         elif option == "5":
             main()
         elif option == "6":
@@ -53,7 +54,7 @@ def analysis_menu():
         option = input(">> ")
 
         if option == "1":
-            get_countries()
+            main()
         elif option == "4":
             main()
         elif option == "5":

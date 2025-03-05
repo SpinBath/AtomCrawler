@@ -5,7 +5,7 @@ from .utils import create_ssl_session, save_json, load_json
 
 session = create_ssl_session()
 
-def get_countries():
+def get_countriesUrl():
 
     url = 'https://pris.iaea.org/PRIS/CountryStatistics/CountryStatisticsLandingPage.aspx'
 
@@ -19,7 +19,7 @@ def get_countries():
         soup = BeautifulSoup(response.text, 'html.parser')
         links = soup.find_all('a', {'id': re.compile('^MainContent_rptSideNavigation_hypNavigation_')})
 
-        for link in tqdm(links, desc="Getting Data", unit="Country URL"):
+        for link in tqdm(links, desc="Getting Countries URLs"):
             
             time.sleep(0.01)
 
@@ -27,24 +27,28 @@ def get_countries():
             link_href = link.get('href')
 
             countries_list.append(link_text)
-            countries_url_list.append(link_href)
+            countries_url_list.append({"URL": link_href})
 
+    
 
     data_dicts = dict(zip(countries_list, countries_url_list))
+    save_json("countries.json", data_dicts)
 
-    save_json('countries.json', data_dicts)
+    return data_dicts
 
-def get_nuclearPlant():
+def get_nuclearPlantsUrl():
 
     url = 'https://pris.iaea.org/'
 
+    nuclearPlants_list = []
+
     countries = load_json('countries.json')
     
-    index = 0
+    for country, path in tqdm(countries.items(), desc="Getting Nuclear Plant URLs"):     
 
-    for country, path in countries.items():     
+        nuclearPlants_list_country = []
 
-        url_country = url + path
+        url_country = url + path["URL"]
 
         response = session.get(url_country)
 
@@ -54,21 +58,19 @@ def get_nuclearPlant():
 
             soup = BeautifulSoup(response.text, 'html.parser')
 
+            viewstate = soup.select_one("input[name='__VIEWSTATE']")["value"]
+            event_validation = soup.select_one("input[name='__EVENTVALIDATION']")["value"]
+
             links = soup.find_all('a', {"id": re.compile("^MainContent_MainContent_rptCountryReactors_hypReactorName_")})
 
-            for nuclearPlantName in links:
-                
-                os.makedirs(f'src/data/{country}/{nuclearPlantName.get_text(strip=True)}', exist_ok=True)
-
             for link in links:
+                
+                os.makedirs(f'src/data/{country}/{link.get_text(strip=True)}', exist_ok=True)
+
                 href = link["href"]
                 if "javascript:__doPostBack" in href:
                     
                     event_target = href.split("'")[1]
-
-                    viewstate = soup.select_one("input[name='__VIEWSTATE']")["value"]
-                    event_validation = soup.select_one("input[name='__EVENTVALIDATION']")["value"]
-
                     post_data = {
                         "__EVENTTARGET": event_target,
                         "__EVENTARGUMENT": "",
@@ -77,142 +79,176 @@ def get_nuclearPlant():
                     }
 
                 post_response = session.post(url_country, data=post_data)
-                
-                get_nuclearPlantAnnualData(post_response.url, country)
-                get_nuclearPlantInfo(post_response.url, country)
 
-                index = index + 1
+                nuclearPlants_list_country.append({link.get_text(strip=True): post_response.url})
 
-                print(" " * 60, end="\r")
-                print(f'{country} Data Uploaded ... ({index}/712)', end='\r')
-
+            nuclearPlants_list.append(nuclearPlants_list_country)
+        
         else:
             
             print(f"Error al acceder a la página: {response.status_code}")
-        
-def get_nuclearPlantInfo(url, country):
 
-    response = session.get(url)
-        
-    if response.status_code == 200:
-            
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        ReactorStatus = soup.find('span',{"id": "MainContent_MainContent_lblReactorStatus"}).text
-        ReactorName = str(soup.find('span', {'id': 'MainContent_MainContent_lblReactorName'}).text).rstrip()
-        table = soup.find('table', {'class': 'layout'})
-
-        rows = table.find_all('tr')
-
-        final_headers=['Reactor Name', 'Reactor Status', 'Country',
-                        'Reactor Type', 'Model', 'Owner', 'Operator', 
-                       'Reference Unit Power (Net Capacity) [MWe]', 'Design Net Capacity [MWe]', 'Gross Capacity [MWe]', 'Thernmal Capacity [MWt]', 
-                       'Construcion Start Date', 'First Criticality Date', 'Construction Suspended Date', 'Construction Restart Date',
-                       'First Grid Connection', 'Commercial Operation Date', 'Suspended Operation Date', 'End of Suspended Operation Date',
-                       'Permanent Shutdown Date']
-        data = []
-
-        data.append(ReactorName)
-        data.append(ReactorStatus)
-        data.append(country)
-
-        keys = final_headers
-
-        index = 1
-        
-        
-        while index < len(rows):
-            headers = rows[index].find_all('td')  
-
-
-            for header in headers:
-
-                data.append(header.get_text(strip=True))
+    return(nuclearPlants_list)
     
-            index += 2
+def get_Urls():
+    datalist1 = get_countriesUrl()
+    datalist2 = get_nuclearPlantsUrl()
+    
+    index = 0
+
+    for data in datalist1:
+        datalist1[data]["info"] = datalist2[index]
+        index = index + 1
+    
+    save_json("countries.json", datalist1)
+
+def get_nuclearPlantInfo():
+
+    if os.path.exists("countries.json"):
         
-        data_dicts = dict(zip(keys, data))
+        data = load_json("countries.json")
 
-        cleaned_data = {}
+        for country, info in tqdm(data.items(), desc="Getting Data"):
+            for reactors in info.get("info", []):
+                for reactor_name, reactor_url in reactors.items():
+                    response = session.get(reactor_url)
+                        
+                    if response.status_code == 200:
+                            
+                        soup = BeautifulSoup(response.text, 'html.parser')
 
-        for key, value in data_dicts.items():
+                        reactorStatus = soup.find('span',{"id": "MainContent_MainContent_lblReactorStatus"}).text
+                        table = soup.find('table', {'class': 'layout'})
 
-            if isinstance(value, str) and (value.endswith("MWe") or value.endswith("MWt")): 
-                match = re.match(r"(\d+)", value) 
-                cleaned_data[key] = match.group(1)
-            else:
-                cleaned_data[key] = value
+                        rows = table.find_all('tr')
 
-        save_json(f'src/data/{country}/{ReactorName}/{ReactorName}_data.json', cleaned_data)
-            
-def get_nuclearPlantAnnualData(url,country):
+                        final_headers=['Reactor Name', 'Reactor Status', 'Country',
+                                        'Reactor Type', 'Model', 'Owner', 'Operator', 
+                                    'Reference Unit Power (Net Capacity) [MWe]', 'Design Net Capacity [MWe]', 'Gross Capacity [MWe]', 'Thernmal Capacity [MWt]', 
+                                    'Construcion Start Date', 'First Criticality Date', 'Construction Suspended Date', 'Construction Restart Date',
+                                    'First Grid Connection', 'Commercial Operation Date', 'Suspended Operation Date', 'End of Suspended Operation Date',
+                                    'Permanent Shutdown Date']
+                        data = []
 
-    response = session.get(url)
+                        data.append(reactor_name)
+                        data.append(reactorStatus)
+                        data.append(country)
 
-    if response.status_code == 200:
+                        keys = final_headers
 
-        soup = BeautifulSoup(response.text, 'html.parser')
-        ReactorStatus = soup.find('span',{"id": "MainContent_MainContent_lblReactorStatus"}).text
-        ReactorName = str(soup.find('span', {'id': 'MainContent_MainContent_lblReactorName'}).text).rstrip()
+                        index = 1
+                        
+                        
+                        while index < len(rows):
+                            headers = rows[index].find_all('td')  
 
-        if ReactorStatus == "Under Construction":
 
-            save_json(f'src/data/{country}/{str(ReactorName).lstrip()}/{str(ReactorName).lstrip()}_AnualData.json', {})
-            
+                            for header in headers:
 
-        else:
-
-            table = soup.find('table', {'class': 'active'})
-
-            rows = table.find_all('tr')
-
-            final_headers = []
-            headers = rows[0].find_all('th')
-            sub_headers = rows[1].find_all('th')
-            n_cols = 0
-
-            data = []
-
-            for header in headers:
-
-                if header.get('colspan'):
-
-                    for i in range(n_cols, n_cols + int(header.get('colspan'))):
-                        if i < len(sub_headers):
-                            final_headers.append(f'{header.get_text(strip=True)}_{sub_headers[i].get_text(strip=True)}')
+                                data.append(header.get_text(strip=True))
                     
-                    n_cols = n_cols + int(header.get('colspan'))
-                else:
-                    final_headers.append(header.get_text(strip=True))
+                            index += 2
+                        
+                        data_dicts = dict(zip(keys, data))
 
-            keys = final_headers
+                        cleaned_data = {}
 
-            for row in rows[2:]:
+                        for key, value in data_dicts.items():
 
-                cells = row.find_all('td')
+                            if isinstance(value, str) and (value.endswith("MWe") or value.endswith("MWt")): 
+                                match = re.match(r"(\d+)", value) 
+                                cleaned_data[key] = match.group(1)
+                            else:
+                                cleaned_data[key] = value
 
-                row_data = []
-
-                for cell in cells:
-
-                    if cell.get('colspan'):
-
-                        for i in range(int(cell.get('colspan'))):
-                            row_data.append(cell.get_text(strip=True))
+                        save_json(f'src/data/{country}/{reactor_name}/{reactor_name}_data.json', cleaned_data)
 
                     else:
-
-                        row_data.append(cell.get_text(strip=True))
-
-                data.append(row_data)
-
-            for row in data:
-                data_dicts = [dict(zip(keys, row)) for row in data]
-
-                save_json(f'src/data/{country}/{str(ReactorName).lstrip()}/{str(ReactorName).lstrip()}_AnualData.json', data_dicts)
-
-
-
-
+                        print({response.status_code})
     else:
-        print(f"Error al acceder a la página: {response.status_code}")
+        print("---  countries.json | not found  ---")
+        print("---  Getting URLs  ---")
+        get_Urls()
+        get_nuclearPlantInfo()
+            
+def get_nuclearPlantAnnualData():
+
+    if os.path.exists("countries.json"):
+        
+        data = load_json("countries.json")
+
+        for country, info in tqdm(data.items(), desc="Getting Data"):
+            for reactors in info.get("info", []):
+                for reactor_name, reactor_url in reactors.items():
+
+                    response = session.get(reactor_url)
+
+                    if response.status_code == 200:
+
+                        soup = BeautifulSoup(response.text, 'html.parser')
+                        ReactorStatus = soup.find('span',{"id": "MainContent_MainContent_lblReactorStatus"}).text
+
+                        if ReactorStatus == "Under Construction":
+
+                            save_json(f'src/data/{country}/{str(reactor_name).lstrip()}/{str(reactor_name).lstrip()}_AnualData.json', {})
+                            
+                        else:
+
+                            table = soup.find('table', {'class': 'active'})
+
+                            rows = table.find_all('tr')
+
+                            final_headers = []
+                            headers = rows[0].find_all('th')
+                            sub_headers = rows[1].find_all('th')
+                            n_cols = 0
+
+                            data = []
+
+                            for header in headers:
+
+                                if header.get('colspan'):
+
+                                    for i in range(n_cols, n_cols + int(header.get('colspan'))):
+                                        if i < len(sub_headers):
+                                            final_headers.append(f'{header.get_text(strip=True)}_{sub_headers[i].get_text(strip=True)}')
+                                    
+                                    n_cols = n_cols + int(header.get('colspan'))
+                                else:
+                                    final_headers.append(header.get_text(strip=True))
+
+                            keys = final_headers
+
+                            for row in rows[2:]:
+
+                                cells = row.find_all('td')
+
+                                row_data = []
+
+                                for cell in cells:
+
+                                    if cell.get('colspan'):
+
+                                        for i in range(int(cell.get('colspan'))):
+                                            row_data.append(cell.get_text(strip=True))
+
+                                    else:
+
+                                        row_data.append(cell.get_text(strip=True))
+
+                                data.append(row_data)
+
+                            for row in data:
+                                data_dicts = [dict(zip(keys, row)) for row in data]
+
+                                save_json(f'src/data/{country}/{str(reactor_name).lstrip()}/{str(reactor_name).lstrip()}_AnualData.json', data_dicts)
+                    else:
+                        print({response.status_code})
+    else:
+        print("---  countries.json | not found  ---")
+        print("---  Getting URLs  ---")
+        get_Urls()
+        get_nuclearPlantInfo()
+
+
+    
