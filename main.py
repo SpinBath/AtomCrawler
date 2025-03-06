@@ -1,5 +1,8 @@
 import os
 from src.scraping import get_Urls, get_nuclearPlantInfo, get_nuclearPlantAnnualData
+from src.analysis import analizer_method
+
+
 
 logo = ('''
             ┏┓      ┏┓       ┓    
@@ -44,20 +47,18 @@ def analysis_menu():
           
     Choose an option (1-3):       
           
-        1. Get Countries URLs
-        2. Get Nuclear Plant General Data
-        3. Get Nuclear Plant Annual Data
-        4. <--
-        5. Exit ''')
+        1. Start Analizer
+        2. <--
+        3. Exit ''')
 
     while True:
         option = input(">> ")
 
         if option == "1":
+            analizer_method()
+        elif option == "2":
             main()
-        elif option == "4":
-            main()
-        elif option == "5":
+        elif option == "3":
             os.system('cls')
             exit()
 

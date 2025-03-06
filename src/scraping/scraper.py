@@ -32,7 +32,7 @@ def get_countriesUrl():
     
 
     data_dicts = dict(zip(countries_list, countries_url_list))
-    save_json("countries.json", data_dicts)
+    save_json("src/data/countries_urls.json", data_dicts)
 
     return data_dicts
 
@@ -42,7 +42,7 @@ def get_nuclearPlantsUrl():
 
     nuclearPlants_list = []
 
-    countries = load_json('countries.json')
+    countries = load_json("src/data/countries_urls.json")
     
     for country, path in tqdm(countries.items(), desc="Getting Nuclear Plant URLs"):     
 
@@ -52,7 +52,7 @@ def get_nuclearPlantsUrl():
 
         response = session.get(url_country)
 
-        os.makedirs(f"src/data/{country}", exist_ok=True)
+        os.makedirs(f"src/data/scraped_data/{country}", exist_ok=True)
 
         if response.status_code == 200:
 
@@ -65,7 +65,7 @@ def get_nuclearPlantsUrl():
 
             for link in links:
                 
-                os.makedirs(f'src/data/{country}/{link.get_text(strip=True)}', exist_ok=True)
+                os.makedirs(f'src/data/scraped_data/{country}/{link.get_text(strip=True)}', exist_ok=True)
 
                 href = link["href"]
                 if "javascript:__doPostBack" in href:
@@ -100,13 +100,13 @@ def get_Urls():
         datalist1[data]["info"] = datalist2[index]
         index = index + 1
     
-    save_json("countries.json", datalist1)
+    save_json("src/data/countries_urls.json", datalist1)
 
 def get_nuclearPlantInfo():
 
-    if os.path.exists("countries.json"):
+    if os.path.exists("src/data/countries_urls.json"):
         
-        data = load_json("countries.json")
+        data = load_json("src/data/countries_urls.json")
 
         for country, info in tqdm(data.items(), desc="Getting Data"):
             for reactors in info.get("info", []):
@@ -161,21 +161,21 @@ def get_nuclearPlantInfo():
                             else:
                                 cleaned_data[key] = value
 
-                        save_json(f'src/data/{country}/{reactor_name}/{reactor_name}_data.json', cleaned_data)
+                        save_json(f'src/data/scraped_data/{country}/{reactor_name}/{reactor_name}_data.json', cleaned_data)
 
                     else:
                         print({response.status_code})
     else:
-        print("---  countries.json | not found  ---")
+        print("---  countries_urls.json | not found  ---")
         print("---  Getting URLs  ---")
         get_Urls()
         get_nuclearPlantInfo()
             
 def get_nuclearPlantAnnualData():
 
-    if os.path.exists("countries.json"):
+    if os.path.exists("src/data/countries_urls.json"):
         
-        data = load_json("countries.json")
+        data = load_json("src/data/countries_urls.json")
 
         for country, info in tqdm(data.items(), desc="Getting Data"):
             for reactors in info.get("info", []):
@@ -190,7 +190,7 @@ def get_nuclearPlantAnnualData():
 
                         if ReactorStatus == "Under Construction":
 
-                            save_json(f'src/data/{country}/{str(reactor_name).lstrip()}/{str(reactor_name).lstrip()}_AnualData.json', {})
+                            save_json(f'src/data/scraped_data/{country}/{str(reactor_name).lstrip()}/{str(reactor_name).lstrip()}_AnualData.json', {})
                             
                         else:
 
@@ -241,11 +241,11 @@ def get_nuclearPlantAnnualData():
                             for row in data:
                                 data_dicts = [dict(zip(keys, row)) for row in data]
 
-                                save_json(f'src/data/{country}/{str(reactor_name).lstrip()}/{str(reactor_name).lstrip()}_AnualData.json', data_dicts)
+                                save_json(f'src/data/scraped_data/{country}/{str(reactor_name).lstrip()}/{str(reactor_name).lstrip()}_AnualData.json', data_dicts)
                     else:
                         print({response.status_code})
     else:
-        print("---  countries.json | not found  ---")
+        print("---  countries_urls.json | not found  ---")
         print("---  Getting URLs  ---")
         get_Urls()
         get_nuclearPlantInfo()
