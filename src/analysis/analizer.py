@@ -123,7 +123,7 @@ def graph_numberReactorsCountry():
     plt.bar(keys, values, color=colors)
 
     plt.ylabel("Nº Nuclear Plants")
-    plt.title("Top Countries (Top 12)")
+    plt.title("Top 12 Countries by Reactor Count")
 
     legend_labels = [f"{key}: {value}" for key, value in list_types.items()]
     plt.legend(bars, legend_labels, loc="upper right")
@@ -169,7 +169,7 @@ def graph_efficiencyReactor():
     plt.ylabel("Reactor Name")
     plt.gca().invert_yaxis()
 
-    plt.title("Most Efficient Reactors (Top 15)")
+    plt.title("Top 15 Nuclear Plants by Efficiency")
 
 
     for bar in bars:
@@ -207,14 +207,13 @@ def graph_grossCapacityReactor():
 
     bars = plt.barh(keys, values, color=colors)
 
-    # Ajuste de etiquetas y título
-    plt.xlabel("Gross Capacity (MWe)", fontsize=12)
+    plt.xlabel("Gross Capacity (MWe)")
     plt.xlim(0, 2500)
 
-    plt.ylabel("Nuclear Plants", fontsize=12)
+    plt.ylabel("Nuclear Plants")
     plt.gca().invert_yaxis()
 
-    plt.title("Top 12 Nuclear Plants by Gross Capacity", fontsize=14)
+    plt.title("Top 12 Nuclear Plants by Gross Capacity")
 
 
     for bar in bars:
