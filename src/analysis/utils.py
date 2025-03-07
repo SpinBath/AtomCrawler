@@ -52,7 +52,7 @@ def abreviature_country(country):
 
 def load_json_generalData():
 
-    location = "src/data/scraped_data"
+    location = "data/scraped_data"
     
     json_data_list = []
     

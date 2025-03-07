@@ -5,9 +5,8 @@ import matplotlib.pyplot as plt
 import pycountry
 from .utils import generate_colors, abreviature_country, load_json_generalData
 
-plt.figure(figsize=(15, 6))
 
-graph_location = "src/data/analized_data/graphs"
+graph_location = "data/analized_data/graphs"
 
 def analizer_method():
     graph_numberReactorsStatus()
@@ -34,6 +33,8 @@ def graph_numberReactorsStatus():
     values = list_types.values()
     keys = list_types.keys()
 
+    plt.figure(figsize=(15, 6))
+
     colors = generate_colors('#80baff', len(list_types))
 
     bars = plt.bar(keys, values, color=colors)
@@ -58,15 +59,17 @@ def graph_numberReactorsType():
 
     for data in json_data_list:
 
-        reactor_status = data["Reactor Type"]
+        reactor_type = data["Reactor Type"]
 
-        if reactor_status not in list_types:
-            list_types[reactor_status] = 1
+        if reactor_type not in list_types:
+            list_types[reactor_type] = 1
         else:
-            list_types[reactor_status] += 1
+            list_types[reactor_type] += 1
 
     values = list_types.values()
     keys = list_types.keys()
+
+    plt.figure(figsize=(13, 6))
 
     colors = generate_colors('#80baff', len(list_types))
 
@@ -75,7 +78,7 @@ def graph_numberReactorsType():
     plt.bar(keys, values, color=colors)
 
     plt.ylabel("Nº Nuclear Plants")
-    plt.title("Nuclear Plants Status")
+    plt.title("Nuclear Plants Type")
 
     legend_labels = [f"{key}: {value}" for key, value in list_types.items()]
     plt.legend(bars, legend_labels, loc="upper right")
@@ -106,6 +109,8 @@ def graph_numberReactorsCountry():
     values = list_types.values()
     keys = [f"{abreviature_country(key)}" for key, value in list_types.items()]
 
+    plt.figure(figsize=(7, 6))
+
     colors = generate_colors('#80baff', len(list_types))
 
     bars = plt.bar(keys, values, color=colors)
@@ -113,7 +118,7 @@ def graph_numberReactorsCountry():
     plt.bar(keys, values, color=colors)
 
     plt.ylabel("Nº Nuclear Plants")
-    plt.title("Nuclear Plants Country")
+    plt.title("Top Countries")
 
     legend_labels = [f"{key}: {value}" for key, value in list_types.items()]
     plt.legend(bars, legend_labels, loc="upper right")

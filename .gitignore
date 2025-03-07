@@ -1,11 +1,9 @@
 /venv
 
-src/data/*
+data/*
 
-!src/data
-
-!src/data/analized_data
-!src/data/analized_data/*
-
-!src/data/data.rar
+!data
+!data/analized_data
+!data/analized_data/*
+!data/data.rar
 
