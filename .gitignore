@@ -3,5 +3,9 @@
 src/data/*
 
 !src/data
+
+!src/data/analized_data
+!src/data/analized_data/*
+
 !src/data/data.rar
 
