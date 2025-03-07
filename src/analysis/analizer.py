@@ -66,6 +66,9 @@ def graph_numberReactorsType():
         else:
             list_types[reactor_type] += 1
 
+    list_types = dict(sorted(list_types.items(), key=lambda item: item[1], reverse=True))
+    list_types = dict(list(list_types.items())[:12])
+
     values = list_types.values()
     keys = list_types.keys()
 
