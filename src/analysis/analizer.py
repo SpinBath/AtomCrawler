@@ -4,16 +4,15 @@ import json
 import matplotlib.pyplot as plt
 import pycountry
 from .utils import generate_colors, abreviature_country, load_json_generalData
+from datetime import datetime
+import locale
 
 
 graph_location = "data/analized_data/graphs"
 
 def analizer_method():
-    graph_numberReactorsStatus()
-    graph_numberReactorsType()
-    graph_numberReactorsCountry()
-    graph_efficiencyReactor()
-    graph_grossCapacityReactor()
+    
+    graph_grossYearConstruction()
 
 def graph_numberReactorsStatus():
 
@@ -223,3 +222,57 @@ def graph_grossCapacityReactor():
     plt.savefig(f"{graph_location}/nuclear_plants_gross.png", dpi=300, bbox_inches='tight')
     plt.show()
 
+def graph_grossYearConstruction():
+
+    list_types = {}
+
+    json_data_list = load_json_generalData()
+
+
+    for data in json_data_list:
+
+        match = re.search(r"\d{4}", data["Construcion Start Date"])
+        year = int(match.group())
+
+        if year not in list_types:
+            list_types[year] = 1
+        else:
+            list_types[year] += 1
+
+
+    min_year = min(list_types.keys())
+    max_year = max(list_types.keys())
+
+    for year in range(min_year, max_year + 1):
+        if year not in list_types:
+            list_types[year] = 0
+
+    list_types = dict(sorted(list_types.items(), key=lambda item: item[0], reverse=False))
+
+    values = list_types.values()
+    keys = [str(year) for year in list_types.keys()]
+
+    plt.figure(figsize=(25, 6))
+
+    colors = generate_colors('#80baff', len(list_types))
+
+    bars = plt.bar(keys, values, color=colors)
+
+    plt.bar(keys, values, color=colors)
+    plt.xticks(rotation=75)
+    plt.title("Historical Nuclear Plant Construction (Construcion Start Date)")
+    plt.ylabel("Nº Nuclear Plants")
+
+    for bar in bars:
+        plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
+                 str(bar.get_height()),  
+                 ha='center', va='bottom', fontsize=10)
+
+    plt.tight_layout()
+    plt.savefig(f"{graph_location}/nuclear_plants_year.png", dpi=300, bbox_inches='tight')
+    plt.show()
+        
+
+   
+
+   
