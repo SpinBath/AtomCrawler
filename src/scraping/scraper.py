@@ -1,9 +1,15 @@
 import re, os, time
 from tqdm import tqdm
 from bs4 import BeautifulSoup
-from .utils import create_ssl_session, save_json, load_json
+import json
+from datetime import datetime
+from .utils import create_ssl_session, save_json, load_json, update_json
 
 session = create_ssl_session()
+
+
+def test():
+    sanitize_Data()
 
 def get_countriesUrl():
 
@@ -250,5 +256,44 @@ def get_nuclearPlantAnnualData():
         get_Urls()
         get_nuclearPlantInfo()
 
+def sanitize_Data():
 
+    location = "data/scraped_data"
+    
+    json_data_list = []
+    sanitize_data = {}
+
+    for root, _, files in os.walk(location):
+        for file in files:
+            if file.endswith("_data.json"):
+                file_path = os.path.join(root, file)
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    json_data_list.append(data)
+    
+    
+    for data in json_data_list:
+        reactor_name = data["Reactor Name"]
+        country = data["Country"]
+
+        for key, value in data.items():
+            if isinstance(value, str):
+                if value.isdigit():
+                    try:
+                        sanitize_data[key] = int(value)
+                    except ValueError:
+                        sanitize_data[key] = value
+                else:
+                    try:
+                        re_value = datetime.strptime(value, "%d %b, %Y").date()
+                        sanitize_data[key] = re_value.isoformat()
+                    except ValueError:
+                        sanitize_data[key] = value if value != "" else None
+                            
+        file_path = f'data/sanitize_data/{country}/{reactor_name}/'
+
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+
+        update_json(f'{file_path}{reactor_name}_data.json', sanitize_data)
     

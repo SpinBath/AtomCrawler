@@ -3,7 +3,7 @@ import os
 import json
 import matplotlib.pyplot as plt
 import pycountry
-from .utils import generate_colors, abreviature_country, load_json_generalData
+from .utils import generate_colors, abreviature_country, load_json_generalData, load_json_annualData
 from datetime import datetime
 import locale
 
@@ -12,7 +12,7 @@ graph_location = "data/analized_data/graphs"
 
 def analizer_method():
     
-    graph_grossYearConstruction()
+    graph_reactorAge()
 
 def graph_numberReactorsStatus():
 
@@ -222,7 +222,7 @@ def graph_grossCapacityReactor():
     plt.savefig(f"{graph_location}/nuclear_plants_gross.png", dpi=300, bbox_inches='tight')
     plt.show()
 
-def graph_grossYearConstruction():
+def graph_reactorYearConstruction():
 
     list_types = {}
 
@@ -272,7 +272,26 @@ def graph_grossYearConstruction():
     plt.savefig(f"{graph_location}/nuclear_plants_year.png", dpi=300, bbox_inches='tight')
     plt.show()
         
-
+def graph_reactorAge():
    
+    list_reactor = {}
 
-   
+    json_data_list = load_json_generalData()
+
+    for data in json_data_list:
+
+        list_data = load_json_annualData(data["Reactor Name"])
+
+        if data["Reactor Status"] == "Operational":
+            for annual_data in list_data:
+                list_years = []
+
+                for d in annual_data:
+                    list_years.append(d["Year"])
+        
+            list_reactor[data["Reactor Name"]] = len(list_years)
+                
+        print(list_reactor)
+
+    list_reactors = dict(sorted(list_reactors.items(), key=lambda item: item[1], reverse=True))
+    list_reactors = dict(list(list_reactors.items())[:12])

@@ -1,5 +1,5 @@
 import os
-from src.scraping import get_Urls, get_nuclearPlantInfo, get_nuclearPlantAnnualData
+from src.scraping import get_Urls, get_nuclearPlantInfo, get_nuclearPlantAnnualData, test
 from src.analysis import analizer_method
 
 
@@ -20,8 +20,9 @@ def scraping_menu():
         2. Get Nuclear Plant Data (General)
         3. Get Nuclear Plant Data (Annual)
         4. Get Nuclear Plant Data (All)
-        5. <-- 
-        6. Exit''')
+        5. Sanitize Data
+        6. <-- 
+        7. Exit''')
 
     while True:
         option = input(">> ")
@@ -36,8 +37,10 @@ def scraping_menu():
             get_nuclearPlantInfo()
             get_nuclearPlantAnnualData()
         elif option == "5":
-            main()
+            test()
         elif option == "6":
+            main()
+        elif option == "7":
             os.system('cls')
             exit()
 

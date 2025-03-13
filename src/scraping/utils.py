@@ -1,4 +1,5 @@
 import json
+import os
 import ssl
 import requests
 from urllib3.poolmanager import PoolManager
@@ -16,6 +17,16 @@ def create_ssl_session():
     session.mount('https://', SSLAdapter())
     return session
 
+def update_json(filename, data):
+     
+    if os.path.exists(filename):
+        with open(filename, "r") as f:
+            current_data = json.load(f)
+        current_data.update(data)
+    else:
+        save_json(filename, data)
+
+
 def save_json(filename, data):
     with open(filename, "w") as f:
         json.dump(data, f, indent=4)
@@ -23,3 +34,4 @@ def save_json(filename, data):
 def load_json(filename):
     with open(filename, "r") as f:
         return json.load(f)
+

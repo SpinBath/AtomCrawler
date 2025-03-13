@@ -67,3 +67,18 @@ def load_json_generalData():
     return json_data_list
 
         
+def load_json_annualData(reactor_name):
+
+    location = "data/scraped_data"
+    
+    json_data_list = []
+    
+    for root, _, files in os.walk(location):
+        for file in files:
+            if file == (f'{reactor_name}_AnualData.json'):
+                file_path = os.path.join(root, file)
+                with open(file_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    json_data_list.append(data)
+    
+    return json_data_list
