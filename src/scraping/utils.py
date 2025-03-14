@@ -18,11 +18,22 @@ def create_ssl_session():
     return session
 
 def update_json(filename, data):
-     
+
     if os.path.exists(filename):
-        with open(filename, "r") as f:
+
+        with open(filename, "r", encoding="utf-8") as f:
             current_data = json.load(f)
-        current_data.update(data)
+
+        if isinstance(current_data, list):
+            if isinstance(data, list):
+                current_data.extend(data)
+
+        elif isinstance(current_data, dict):
+            if isinstance(data, dict):
+                current_data.update(data)
+        
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(current_data, f, ensure_ascii=False, indent=4)
     else:
         save_json(filename, data)
 

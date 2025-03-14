@@ -10,6 +10,7 @@ session = create_ssl_session()
 
 def test():
     sanitize_Data()
+    sanitize_AnnualData()
 
 def get_countriesUrl():
 
@@ -297,3 +298,56 @@ def sanitize_Data():
 
         update_json(f'{file_path}{reactor_name}_data.json', sanitize_data)
     
+def sanitize_AnnualData():
+
+    location = "data/scraped_data"
+    
+    json_sanitize_data = {}
+
+    for root, _, files in os.walk(location):
+
+        for file in files:
+
+            if file.endswith("_AnualData.json"):
+                file_path = os.path.join(root, file)
+
+                with open(file_path, "r", encoding="utf-8") as f:
+
+                    data = json.load(f)
+
+                    normalized_path = os.path.normpath(file_path)
+                    parts = normalized_path.split(os.sep)
+
+                    country = parts[2]
+                    reactor_name = parts[3]
+
+                    sanitized_entries = []
+
+                    for entry in data:
+                        sanitize_data = {}
+
+                        for key, value in entry.items():
+                            if isinstance(value, str):
+                                if value.isdigit():
+                                    try:
+                                        sanitize_data[key] = int(value)
+                                    except ValueError:
+                                        sanitize_data[key] = value
+                                else:
+                                    try:
+                                        sanitize_data[key] = float(value)  
+                                    except ValueError:
+                                        sanitize_data[key] = value 
+                            else:
+                                sanitize_data[key] = value
+                        
+                        sanitized_entries.append(sanitize_data)
+
+                    json_sanitize_data = sanitized_entries
+                        
+                    file_path = f'data/sanitize_data/{country}/{reactor_name}/'
+
+                    if not os.path.exists(file_path):
+                        os.makedirs(file_path)
+
+                    update_json(f'{file_path}{reactor_name}_AnualData.json', json_sanitize_data)
