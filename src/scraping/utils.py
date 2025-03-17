@@ -17,6 +17,7 @@ def create_ssl_session():
     session.mount('https://', SSLAdapter())
     return session
 
+
 def update_json(filename, data):
 
     if os.path.exists(filename):
@@ -36,7 +37,6 @@ def update_json(filename, data):
             json.dump(current_data, f, ensure_ascii=False, indent=4)
     else:
         save_json(filename, data)
-
 
 def save_json(filename, data):
     with open(filename, "w") as f:

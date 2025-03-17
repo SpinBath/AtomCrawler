@@ -50,9 +50,27 @@ def abreviature_country(country):
         if country == coun:
             return abr
 
+def update_json(filename, data):
+
+    if os.path.exists(filename):
+
+        with open(filename, "r", encoding="utf-8") as f:
+            current_data = json.load(f)
+
+        if isinstance(current_data, list):
+            if isinstance(data, list):
+                current_data.extend(data)
+
+        elif isinstance(current_data, dict):
+            if isinstance(data, dict):
+                current_data.update(data)
+        
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(current_data, f, ensure_ascii=False, indent=4)
+
 def load_json_generalData():
 
-    location = "data/scraped_data"
+    location = "data/sanitize_data"
     
     json_data_list = []
     
@@ -65,11 +83,10 @@ def load_json_generalData():
                     json_data_list.append(data)
     
     return json_data_list
-
-        
+       
 def load_json_annualData(reactor_name):
 
-    location = "data/scraped_data"
+    location = "data/sanitize_data"
     
     json_data_list = []
     
