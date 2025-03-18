@@ -12,7 +12,7 @@ import locale
 graph_location = "data/analized_data/graphs"
 
 def analizer_method():
-    Graph.numberReactorsCountry()
+    Data.reactor_age()
 
 class Graph():
 
@@ -103,42 +103,30 @@ class Graph():
                         
     def efficiencyReactor():
 
-        list_reactors = {}
+        df = pd.DataFrame(load_json_generalData())
+        
+        df_OperationalReactor = df[df["Reactor Status"] == "Operational"]
 
-        json_data_list = load_json_generalData()
+        top_reactors = df_OperationalReactor.nlargest(15, "Thermal Efficiency [%]")
 
-        for data in json_data_list:
-            
-            if data["Reactor Status"] == "Operational":
-                
-                reactor_name = data["Reactor Name"]
-                term = data["Thernmal Capacity [MWt]"]
-                net_power = data["Reference Unit Power (Net Capacity) [MWe]"]
-
-                efficiency = round(int(net_power) / int(term) * 100, 2)
-                list_reactors[reactor_name] = efficiency
-            
-        list_reactors = dict(sorted(list_reactors.items(), key=lambda item: item[1], reverse=True))
-        list_reactors = dict(list(list_reactors.items())[:15])
-
-        values = list_reactors.values()
-        keys = list_reactors.keys()
+        keys = top_reactors["Reactor Name"].values
+        values = top_reactors["Thermal Efficiency [%]"].values
 
         plt.figure(figsize=(10, 5))
 
-        colors = generate_colors('#80baff', len(list_reactors))
+        colors = generate_colors('#80baff', len(top_reactors))
 
         bars = plt.barh(keys, values, color=colors)
 
         plt.barh(keys, values, color=colors)
 
-        plt.xlabel("Efficiency (%)")
+        plt.xlabel("Thermal Efficiency (%)")
         plt.xlim(0, 100)
 
         plt.ylabel("Reactor Name")
         plt.gca().invert_yaxis()
 
-        plt.title("Top 15 Nuclear Plants by Efficiency")
+        plt.title("Top 15 Nuclear Plants by Thermal Efficiency")
 
 
         for bar in bars:
@@ -194,33 +182,9 @@ class Graph():
 
     def reactorYearConstruction():
 
-        list_types = {}
+        df = pd.DataFrame(load_json_generalData)
 
-        json_data_list = load_json_generalData()
-
-
-        for data in json_data_list:
-
-            match = re.search(r"\d{4}", data["Construcion Start Date"])
-            year = int(match.group())
-
-            if year not in list_types:
-                list_types[year] = 1
-            else:
-                list_types[year] += 1
-
-
-        min_year = min(list_types.keys())
-        max_year = max(list_types.keys())
-
-        for year in range(min_year, max_year + 1):
-            if year not in list_types:
-                list_types[year] = 0
-
-        list_types = dict(sorted(list_types.items(), key=lambda item: item[0], reverse=False))
-
-        values = list_types.values()
-        keys = [str(year) for year in list_types.keys()]
+        df_reactorYears = df["Years Connected"]
 
         plt.figure(figsize=(25, 6))
 
@@ -244,7 +208,7 @@ class Graph():
 
 class Data():
 
-    def Thermal_Efficiency():
+    def thermal_efficiency():
 
         location = "data/sanitize_data"
             
@@ -254,37 +218,41 @@ class Data():
                     file_path = os.path.join(root, file)
                     with open(file_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
-        
-                        if data["Reactor Status"] == "Operational":
-                            
-                            term = data["Thernmal Capacity [MWt]"]
-                            net_power = data["Reference Unit Power (Net Capacity) [MWe]"]
+                                    
+                        term = data["Thernmal Capacity [MWt]"]
+                        net_power = data["Reference Unit Power (Net Capacity) [MWe]"]
 
-                            efficiency = round(net_power / term * 100, 2)
-                            data["Thermal Efficciency [%]"] = efficiency
+                        efficiency = round(net_power / term * 100, 2)
+                        data["Thermal Efficiency [%]"] = efficiency
                     
-                            with open(file_path, "w", encoding="utf-8") as f:
-                                    json.dump(data, f, ensure_ascii=False, indent=4)
+                        with open(file_path, "w", encoding="utf-8") as f:
+                                json.dump(data, f, ensure_ascii=False, indent=4)
 
 
-    def reactorAge():
+    def reactor_age():
 
-        list_reactor = {}
 
-        json_data_list = load_json_generalData()
-
-        for data in json_data_list:
-
-            list_data = load_json_annualData(data["Reactor Name"])
-
-            if data["Reactor Status"] == "Operational":
-                for annual_data in list_data:
-                    list_years = []
-
-                    for d in annual_data:
-                        list_years.append(d["Year"])
+        location = "data/sanitize_data"
             
-                list_reactor[data["Reactor Name"]] = len(list_years)
+        for root, _, files in os.walk(location):
+            for file in files:
+                if file.endswith("_data.json"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+
+                        list_data = load_json_annualData(data["Reactor Name"])
+
+                        df = pd.DataFrame(list_data)
+
+                        num_filas, num_columnas = df.shape
+                            
+                        data["Years Connected"] = num_columnas
+
+                        with open(file_path, "w", encoding="utf-8") as f:
+                                json.dump(data, f, ensure_ascii=False, indent=4)
+
+      
         
         
 
