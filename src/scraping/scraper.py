@@ -264,6 +264,11 @@ def sanitize_Data():
     json_data_list = []
     sanitize_data = {}
 
+    key_corrections = {
+        "Thernmal Capacity [MWt]": "Thermal Capacity [MWt]",
+        "Construcion Start Date": "Construction Start Date"
+    }
+
     for root, _, files in os.walk(location):
         for file in files:
             if file.endswith("_data.json"):
@@ -272,24 +277,25 @@ def sanitize_Data():
                     data = json.load(f)
                     json_data_list.append(data)
     
-    
     for data in json_data_list:
         reactor_name = data["Reactor Name"]
         country = data["Country"]
-
         for key, value in data.items():
+
+            corrected_key = key_corrections.get(key, key)
+
             if isinstance(value, str):
                 if value.isdigit():
                     try:
-                        sanitize_data[key] = int(value)
+                        sanitize_data[corrected_key] = int(value)
                     except ValueError:
-                        sanitize_data[key] = value
+                        sanitize_data[corrected_key] = value
                 else:
                     try:
                         re_value = datetime.strptime(value, "%d %b, %Y").date()
-                        sanitize_data[key] = re_value.isoformat()
+                        sanitize_data[corrected_key] = re_value.isoformat()
                     except ValueError:
-                        sanitize_data[key] = value if value != "" else None
+                        sanitize_data[corrected_key] = value if value != "" else None
                             
         file_path = f'data/sanitize_data/{country}/{reactor_name}/'
 

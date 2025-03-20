@@ -12,7 +12,7 @@ import locale
 graph_location = "data/analized_data/graphs"
 
 def analizer_method():
-    Data.reactor_age()
+    Data.reactor_hours_on_line()
 
 class Graph():
 
@@ -188,7 +188,7 @@ class Graph():
 
         plt.figure(figsize=(25, 6))
 
-        colors = generate_colors('#80baff', len(list_types))
+        colors = generate_colors('#80baff', len(df_reactorYears))
 
         bars = plt.bar(keys, values, color=colors)
 
@@ -219,7 +219,7 @@ class Data():
                     with open(file_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
                                     
-                        term = data["Thernmal Capacity [MWt]"]
+                        term = data["Thermal Capacity [MWt]"]
                         net_power = data["Reference Unit Power (Net Capacity) [MWe]"]
 
                         efficiency = round(net_power / term * 100, 2)
@@ -230,7 +230,6 @@ class Data():
 
 
     def reactor_age():
-
 
         location = "data/sanitize_data"
             
@@ -245,14 +244,38 @@ class Data():
 
                         df = pd.DataFrame(list_data)
 
-                        num_filas, num_columnas = df.shape
+                        num_rows, num_columns = df.shape
                             
-                        data["Years Connected"] = num_columnas
+                        data["Years Connected"] = num_columns
 
                         with open(file_path, "w", encoding="utf-8") as f:
                                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-      
+    def reactor_hours_on_line():
         
-        
+        location = "data/sanitize_data"
+            
+        for root, _, files in os.walk(location):
+            for file in files:
+                if file.endswith("_data.json"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
 
+                        list_data = load_json_annualData(data["Reactor Name"])
+
+                        for annual_data in list_data: 
+                            try:
+                                df = pd.DataFrame(annual_data)
+                                df["Annual Time On Line[h]"] = pd.to_numeric(df["Annual Time On Line[h]"], errors='coerce')
+
+                                df_clean = df.dropna()
+                                total_hours = int(df_clean["Annual Time On Line[h]"].values.sum())
+
+                                data["Hours On Line"] = total_hours   
+       
+                            except:
+                                data["Hours On Line"] = 0
+
+                        with open(file_path, "w", encoding="utf-8") as f:
+                                json.dump(data, f, ensure_ascii=False, indent=4) 
