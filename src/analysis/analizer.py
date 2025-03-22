@@ -12,7 +12,8 @@ import locale
 graph_location = "data/analized_data/graphs"
 
 def analizer_method():
-    Data.reactor_hours_on_line()
+
+    Data.reactor_total_powersupplied()
 
 class Graph():
 
@@ -180,30 +181,37 @@ class Graph():
         plt.savefig(f"{graph_location}/nuclear_plants_gross.png", dpi=300, bbox_inches='tight')
         plt.show()
 
-    def reactorYearConstruction():
+    def reactorDaysOnLine():
 
-        df = pd.DataFrame(load_json_generalData)
+        df = pd.DataFrame(load_json_generalData())
 
-        df_reactorYears = df["Years Connected"]
+        top_reactors = df.nlargest(15, "Hours On Line")
 
-        plt.figure(figsize=(25, 6))
+        keys = top_reactors["Reactor Name"].values
+        values = top_reactors["Hours On Line"].values
 
-        colors = generate_colors('#80baff', len(df_reactorYears))
+        values = [round(value / 24) for value in values]
 
-        bars = plt.bar(keys, values, color=colors)
+        plt.figure(figsize=(13, 6))
 
-        plt.bar(keys, values, color=colors)
-        plt.xticks(rotation=75)
-        plt.title("Historical Nuclear Plant Construction (Construcion Start Date)")
-        plt.ylabel("Nº Nuclear Plants")
+        colors = generate_colors('#80baff', len(top_reactors))
+
+        bars = plt.barh(keys, values, color=colors)
+
+        plt.xlabel("Days On Line")
+        plt.xlim(0, 30000)
+
+        plt.ylabel("Nuclear Plants")
+        plt.gca().invert_yaxis()
+
+        plt.title("Top 15 Nuclear Plants by Days On Line")
+
 
         for bar in bars:
-            plt.text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
-                    str(bar.get_height()),  
-                    ha='center', va='bottom', fontsize=10)
+            plt.text(bar.get_width() + 600, bar.get_y() + bar.get_height()/2, f'{bar.get_width():,.0f} Days - ({int(bar.get_width()) * 24} Hours)', va='center')
 
         plt.tight_layout()
-        plt.savefig(f"{graph_location}/nuclear_plants_year.png", dpi=300, bbox_inches='tight')
+        plt.savefig(f"{graph_location}/nuclear_plants_hours.png", dpi=300, bbox_inches='tight')
         plt.show()
 
 class Data():
@@ -228,7 +236,6 @@ class Data():
                         with open(file_path, "w", encoding="utf-8") as f:
                                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-
     def reactor_age():
 
         location = "data/sanitize_data"
@@ -251,13 +258,13 @@ class Data():
                         with open(file_path, "w", encoding="utf-8") as f:
                                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def reactor_hours_on_line():
+    def reactor_hours_online():
         
         location = "data/sanitize_data"
             
         for root, _, files in os.walk(location):
             for file in files:
-                if file.endswith("_data.json"):
+                if file.endswith(" _data.json"):
                     file_path = os.path.join(root, file)
                     with open(file_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
@@ -279,3 +286,32 @@ class Data():
 
                         with open(file_path, "w", encoding="utf-8") as f:
                                 json.dump(data, f, ensure_ascii=False, indent=4) 
+
+    def reactor_total_powersupplied():
+        
+        location = "data/sanitize_data"
+            
+        for root, _, files in os.walk(location):
+            for file in files:
+                if file.endswith("_data.json"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+
+                        list_data = load_json_annualData(data["Reactor Name"])
+
+                        for annual_data in list_data: 
+                            try:
+                                df = pd.DataFrame(annual_data)
+                                df["Electricity Supplied[GW.h]"] = pd.to_numeric(df["Electricity Supplied[GW.h]"], errors='coerce')
+
+                                df_clean = df.dropna()
+                                power_supplied = int(df_clean["Electricity Supplied[GW.h]"].values.sum())
+
+                                data["Total Power Supplied [GW.h]"] = power_supplied   
+       
+                            except:
+                                data["Total Power Supplied [GW.h]"] = 0
+
+                        with open(file_path, "w", encoding="utf-8") as f:
+                                json.dump(data, f, ensure_ascii=False, indent=4)
