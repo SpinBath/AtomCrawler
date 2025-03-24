@@ -13,11 +13,22 @@ graph_location = "data/analized_data/graphs"
 
 def analizer_method():
 
-    Data.reactor_total_powersupplied()
+    Data()
+    Graph()
 
 class Graph():
 
-    def numberReactorsStatus():
+    def __init__(self):
+
+        self.numberReactorsStatus()
+        self.numberReactorsType()
+        self.numberReactorsCountry()
+        self.efficiencyThermalReactor()
+        self.efficiencyEnergyReactor()
+        self.grossCapacityReactor()
+        self.reactorDaysOnLine()
+
+    def numberReactorsStatus(self):
 
         df = pd.DataFrame(load_json_generalData())
 
@@ -42,9 +53,8 @@ class Graph():
 
         plt.tight_layout()
         plt.savefig(f"{graph_location}/nuclear_plants_status.png", dpi=300, bbox_inches='tight')
-        plt.show() 
 
-    def numberReactorsType():
+    def numberReactorsType(self):
 
         df = pd.DataFrame(load_json_generalData())
 
@@ -69,9 +79,8 @@ class Graph():
 
         plt.tight_layout()
         plt.savefig(f"{graph_location}/nuclear_plants_types.png", dpi=300, bbox_inches='tight')
-        plt.show()
 
-    def numberReactorsCountry():
+    def numberReactorsCountry(self):
 
         df = pd.DataFrame(load_json_generalData())
         
@@ -100,9 +109,8 @@ class Graph():
 
         plt.tight_layout()
         plt.savefig(f"{graph_location}/nuclear_plants_country.png", dpi=300, bbox_inches='tight')
-        plt.show()
                         
-    def efficiencyReactor():
+    def efficiencyThermalReactor(self):
 
         df = pd.DataFrame(load_json_generalData())
         
@@ -134,10 +142,43 @@ class Graph():
             plt.text(bar.get_width() + 5, bar.get_y() + bar.get_height()/2, f'{bar.get_width():,.2f}%', va='center')
 
         plt.tight_layout()
-        plt.savefig(f"{graph_location}/nuclear_plants_efficiency.png", dpi=300, bbox_inches='tight')
-        plt.show()
+        plt.savefig(f"{graph_location}/nuclear_plants_thermalefficiency.png", dpi=300, bbox_inches='tight')
 
-    def grossCapacityReactor():
+    def efficiencyEnergyReactor(self):
+
+        df = pd.DataFrame(load_json_generalData())
+        
+        df_OperationalReactor = df[df["Reactor Status"] == "Operational"]
+
+        top_reactors = df_OperationalReactor.nlargest(15, "Energy Efficiency [%]")
+
+        keys = top_reactors["Reactor Name"].values
+        values = top_reactors["Energy Efficiency [%]"].values
+
+        plt.figure(figsize=(10, 5))
+
+        colors = generate_colors('#80baff', len(top_reactors))
+
+        bars = plt.barh(keys, values, color=colors)
+
+        plt.barh(keys, values, color=colors)
+
+        plt.xlabel("Energy Efficiency (%)")
+        plt.xlim(0, 100)
+
+        plt.ylabel("Reactor Name")
+        plt.gca().invert_yaxis()
+
+        plt.title("Top 15 Nuclear Plants by Energy Efficiency")
+
+
+        for bar in bars:
+            plt.text(bar.get_width() + 5, bar.get_y() + bar.get_height()/2, f'{bar.get_width():,.2f}%', va='center')
+
+        plt.tight_layout()
+        plt.savefig(f"{graph_location}/nuclear_plants_energyefficiency.png", dpi=300, bbox_inches='tight')
+
+    def grossCapacityReactor(self):
 
         list_reactors = {}
 
@@ -179,9 +220,8 @@ class Graph():
 
         plt.tight_layout()
         plt.savefig(f"{graph_location}/nuclear_plants_gross.png", dpi=300, bbox_inches='tight')
-        plt.show()
 
-    def reactorDaysOnLine():
+    def reactorDaysOnLine(self):
 
         df = pd.DataFrame(load_json_generalData())
 
@@ -212,11 +252,18 @@ class Graph():
 
         plt.tight_layout()
         plt.savefig(f"{graph_location}/nuclear_plants_hours.png", dpi=300, bbox_inches='tight')
-        plt.show()
 
 class Data():
 
-    def thermal_efficiency():
+    def __init__(self):
+
+        self.thermal_efficiency(self)
+        self.energy_efficiency(self)
+        self.reactor_age(self)
+        self.reactor_hours_online(self)
+        self.reactor_total_powersupplied(self)
+
+    def thermal_efficiency(self):
 
         location = "data/sanitize_data"
             
@@ -236,7 +283,27 @@ class Data():
                         with open(file_path, "w", encoding="utf-8") as f:
                                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def reactor_age():
+    def energy_efficiency(self):
+
+        location = "data/sanitize_data"
+            
+        for root, _, files in os.walk(location):
+            for file in files:
+                if file.endswith("_data.json"):
+                    file_path = os.path.join(root, file)
+                    with open(file_path, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+
+                        net_power = data["Design Net Capacity [MWe]"]
+                        thermal_power = data["Thermal Capacity [MWt]"]
+
+                        efficiency = round(net_power / thermal_power * 100, 2)
+                        data["Energy Efficiency [%]"] = efficiency
+                            
+                        with open(file_path, "w", encoding="utf-8") as f:
+                            json.dump(data, f, ensure_ascii=False, indent=4)
+
+    def reactor_age(self):
 
         location = "data/sanitize_data"
             
@@ -258,13 +325,13 @@ class Data():
                         with open(file_path, "w", encoding="utf-8") as f:
                                 json.dump(data, f, ensure_ascii=False, indent=4)
 
-    def reactor_hours_online():
+    def reactor_hours_online(self):
         
         location = "data/sanitize_data"
             
         for root, _, files in os.walk(location):
             for file in files:
-                if file.endswith(" _data.json"):
+                if file.endswith("_data.json"):
                     file_path = os.path.join(root, file)
                     with open(file_path, "r", encoding="utf-8") as f:
                         data = json.load(f)
@@ -278,16 +345,16 @@ class Data():
 
                                 df_clean = df.dropna()
                                 total_hours = int(df_clean["Annual Time On Line[h]"].values.sum())
-
+                                
                                 data["Hours On Line"] = total_hours   
-       
+
                             except:
                                 data["Hours On Line"] = 0
 
                         with open(file_path, "w", encoding="utf-8") as f:
                                 json.dump(data, f, ensure_ascii=False, indent=4) 
 
-    def reactor_total_powersupplied():
+    def reactor_total_powersupplied(self):
         
         location = "data/sanitize_data"
             
@@ -306,12 +373,12 @@ class Data():
                                 df["Electricity Supplied[GW.h]"] = pd.to_numeric(df["Electricity Supplied[GW.h]"], errors='coerce')
 
                                 df_clean = df.dropna()
-                                power_supplied = int(df_clean["Electricity Supplied[GW.h]"].values.sum())
+                                power_supplied = round(int(df_clean["Electricity Supplied[GW.h]"].values.sum()) / 1000, 2)
 
-                                data["Total Power Supplied [GW.h]"] = power_supplied   
+                                data["Total Power Supplied [TW.h]"] =  power_supplied
        
                             except:
-                                data["Total Power Supplied [GW.h]"] = 0
+                                data["Total Power Supplied [TW.h]"] = 0
 
                         with open(file_path, "w", encoding="utf-8") as f:
                                 json.dump(data, f, ensure_ascii=False, indent=4)
