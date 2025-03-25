@@ -257,11 +257,11 @@ class Data():
 
     def __init__(self):
 
+        self.reactor_total_powersupplied(self)
         self.thermal_efficiency(self)
         self.energy_efficiency(self)
         self.reactor_age(self)
         self.reactor_hours_online(self)
-        self.reactor_total_powersupplied(self)
 
     def thermal_efficiency(self):
 

@@ -1,6 +1,6 @@
 import os
 from src.scraping import get_Urls, get_nuclearPlantInfo, get_nuclearPlantAnnualData, test
-from src.analysis import analizer_method
+from src.analysis import analizer_method, converter_method
 
 
 
@@ -58,7 +58,7 @@ def analysis_menu():
         option = input(">> ")
 
         if option == "1":
-            analizer_method()
+            converter_method()
         elif option == "2":
             main()
         elif option == "3":
