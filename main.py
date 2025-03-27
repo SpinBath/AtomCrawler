@@ -1,7 +1,6 @@
 import os
-from src.scraping import get_Urls, get_nuclearPlantInfo, get_nuclearPlantAnnualData, test
-from src.analysis import analizer_method, converter_method
-
+from src.scraping import get_Urls, get_nuclearPlantInfo, get_nuclearPlantAnnualData, sanitize_Data, sanitize_AnnualData
+from src.analysis import Data, Graph, converter_method
 
 
 logo = ('''
@@ -37,7 +36,8 @@ def scraping_menu():
             get_nuclearPlantInfo()
             get_nuclearPlantAnnualData()
         elif option == "5":
-            test()
+            sanitize_Data()
+            sanitize_AnnualData()
         elif option == "6":
             main()
         elif option == "7":
@@ -50,18 +50,29 @@ def analysis_menu():
           
     Choose an option (1-3):       
           
-        1. Start Analizer
-        2. <--
-        3. Exit ''')
+        1. Retrieve More Data
+        2. Generate Graphs
+        3. Generate Docs
+        4. Run all analizer
+        5. <-- 
+        6. Exit ''')
 
     while True:
         option = input(">> ")
 
         if option == "1":
-            converter_method()
+            Data()
         elif option == "2":
-            main()
+            Graph()
         elif option == "3":
+            converter_method()
+        elif option == "4":
+            Data()
+            Graph()
+            converter_method()
+        elif option == "5":
+            main()
+        elif option == "6":
             os.system('cls')
             exit()
 

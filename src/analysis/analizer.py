@@ -11,11 +11,6 @@ import locale
 
 graph_location = "data/analized_data/graphs"
 
-def analizer_method():
-
-    Data()
-    Graph()
-
 class Graph():
 
     def __init__(self):
@@ -257,11 +252,11 @@ class Data():
 
     def __init__(self):
 
-        self.reactor_total_powersupplied(self)
-        self.thermal_efficiency(self)
-        self.energy_efficiency(self)
-        self.reactor_age(self)
-        self.reactor_hours_online(self)
+        self.reactor_total_powersupplied()
+        self.thermal_efficiency()
+        self.energy_efficiency()
+        self.reactor_age()
+        self.reactor_hours_online()
 
     def thermal_efficiency(self):
 

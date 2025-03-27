@@ -7,11 +7,6 @@ from .utils import create_ssl_session, save_json, load_json, update_json
 
 session = create_ssl_session()
 
-
-def test():
-    sanitize_Data()
-    sanitize_AnnualData()
-
 def get_countriesUrl():
 
     url = 'https://pris.iaea.org/PRIS/CountryStatistics/CountryStatisticsLandingPage.aspx'

@@ -1,4 +1,4 @@
-from .analizer import analizer_method
+from .analizer import Graph, Data
 from .converter import converter_method
 
-__all__ = ["analizer_method", "converter_method"]
+__all__ = ["Graph", "Data", "converter_method"]
