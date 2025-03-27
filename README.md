@@ -2,6 +2,8 @@
 
 ![ATOMCRAWLER-LOGO](https://github.com/XRayBinary/assets/blob/main/AtomCrawler.png)
 
+![ATOMCRAWLER-graph](https://github.com/XRayBinary/AtomCrawler/blob/main/images/atomcrawler_map.png)
+
 > [!IMPORTANT]  
 > Under Development.
 
