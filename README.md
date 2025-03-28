@@ -24,7 +24,7 @@ The data for each nuclear power plant is gathered through web scraping from the 
 The type of scraping used is for Static Data, as PRIS currently does not provide any public API for querying its database.
 
 Technologies:<br>
-**BeautifulSoup** (*beautifulsoup4 == 4.13.3*)
+ - **BeautifulSoup** (*beautifulsoup4 == 4.13.3*)
 
 ![ATOMCRAWLER-graph](https://github.com/XRayBinary/AtomCrawler/blob/main/data/analized_data/graphs/nuclear_plants_status.png)
 ![ATOMCRAWLER-graph](https://github.com/XRayBinary/AtomCrawler/blob/main/data/analized_data/graphs/nuclear_plants_country.png)
