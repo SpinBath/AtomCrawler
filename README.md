@@ -13,7 +13,7 @@ AtomCrawler is an application that collects data from different nuclear reactors
 
 ![ATOMCRAWLER-graph](https://github.com/XRayBinary/AtomCrawler/blob/main/images/atomcrawler_map.png)
 
-### - Data Collection
+### 1. Data Collection
 
 The data for each nuclear power plant is gathered through web scraping from the website of the Power Reactor Information System (PRIS), which belongs to the International Atomic Energy Agency (IAEA).
 
