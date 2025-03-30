@@ -1,6 +1,5 @@
 from .utils import load_json_generalData
 import pandas as pd
-import json
 import re
 import os
 import datetime

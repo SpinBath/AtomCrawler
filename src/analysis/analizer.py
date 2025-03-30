@@ -1,13 +1,8 @@
-import re
 import os
 import json
 import matplotlib.pyplot as plt
-import pycountry
 import pandas as pd
 from .utils import generate_colors, abreviature_country, load_json_generalData, load_json_annualData, update_json
-from datetime import datetime
-import locale
-
 
 graph_location = "data/analized_data/graphs"
 
