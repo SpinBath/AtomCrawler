@@ -50,6 +50,7 @@ These processed data are also stored in different formats, such as **XML** files
  `matplotlib == 3.10.1` 
 
 ![ATOMCRAWLER-graph](https://github.com/XRayBinary/AtomCrawler/blob/main/images/data.png)
+![ATOMCRAWLER-graph](https://github.com/XRayBinary/AtomCrawler/blob/main/images/data2.png)
 
 <hr>
 
