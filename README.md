@@ -48,3 +48,5 @@ These processed data are also stored in different formats, such as **XML** files
 **Technologies used:**  
  `pandas == 2.2.3`  
  `matplotlib == 3.10.1` 
+
+![ATOMCRAWLER-graph](https://github.com/XRayBinary/AtomCrawler/blob/main/images/data.png)
