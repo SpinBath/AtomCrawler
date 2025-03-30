@@ -50,3 +50,64 @@ These processed data are also stored in different formats, such as **XML** files
  `matplotlib == 3.10.1` 
 
 ![ATOMCRAWLER-graph](https://github.com/XRayBinary/AtomCrawler/blob/main/images/data.png)
+
+<hr>
+
+## How to Setup
+
+To set up this project on your local machine, follow these steps:
+
+### Prerequisites
+
+Before starting, ensure that you have the following installed:
+
+- Python 3.x (Recommended: 3.7+)
+- pip (Python package installer)
+
+You can download Python from [here](https://www.python.org/downloads/).
+
+### 1. Clone the Repository
+
+Clone the repository to your local machine using Git:
+
+```bash
+git clone https://github.com/XRayBinary/AtomCrawler.git
+cd AtomCrawler
+```
+
+### 2. Create a Virtual Environment (Optional but Recommended)
+It’s a good practice to create a virtual environment to isolate the dependencies for your project. To create a virtual environment, use the following commands:
+
+
+```bash
+python3 -m venv venv
+```
+
+Activate the virtual environment:
+
+On Windows:
+
+```bash
+.\venv\Scripts\activate
+```
+
+On macOS/Linux:
+
+```bash
+source venv/bin/activate
+```
+
+### 3. Install the dependencies
+
+With the virtual environment activated, install the necessary dependencies using pip:
+
+```bash
+pip install -r requirements.txt
+```
+### 4. Iniciar el Proyecto
+
+To run the main.py file, make sure you're in the directory where the file is located and then execute the following command:
+
+```bash
+python3 main.py
+```
