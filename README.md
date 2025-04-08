@@ -112,3 +112,17 @@ To run the main.py file, make sure you're in the directory where the file is loc
 ```bash
 python3 main.py
 ```
+
+<details>
+   <summary><h2>Gallery</h2></summary>
+  <details>
+    Examples of Generated Graphs
+    <summary><h3>Graphs</h3></summary>
+
+  ![AtomCrawler-Graph](https://github.com/SpinBath/AtomCrawler/blob/main/data/analized_data/graphs/nuclear_plants_country.png)    
+  ![AtomCrawler-Graph](https://github.com/SpinBath/AtomCrawler/blob/main/data/analized_data/graphs/nuclear_plants_gross.png)
+  ![AtomCrawler-Graph](https://github.com/SpinBath/AtomCrawler/blob/main/data/analized_data/graphs/nuclear_plants_status.png)
+  ![AtomCrawler-Graph](https://github.com/SpinBath/AtomCrawler/blob/main/data/analized_data/graphs/nuclear_plants_thermalefficiency.png)
+  ![AtomCrawler-Graph](https://github.com/SpinBath/AtomCrawler/blob/main/data/analized_data/graphs/nuclear_plants_hours.png)   
+
+  </details>
