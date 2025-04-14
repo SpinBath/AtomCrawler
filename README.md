@@ -28,19 +28,19 @@ The type of scraping used is for Static Data, as PRIS currently does not provide
 **Technologies used:**  
 `beautifulsoup4 == 4.13.3`
 
-### 1. Sanitization  
+### 2. Sanitization  
 Data sanitization processes are applied to the collected data:  
 - Correction of erroneous data  
 - Standardization of formats  
 - Handling of missing values  
 
-### 1. Retrieve More Data  
+### 3. Retrieve More Data  
 Once the data is cleaned, a process is carried out to generate additional data based on the existing ones (Thermal Efficiency [%], Hours On Line, Total Power Supplied [TW.h], etc.).  
 
 **Technologies used:**  
  `pandas == 2.2.3`  
 
-### 1. Processing  
+### 4. Processing  
 Data stored in JSON files is processed to generate graphs for visualizations (Top Countries by Reactor Count, Nuclear Plant Status, etc.)
 
 These processed data are also stored in different formats, such as **XML** files for web services (SOAP, REST) and **CSV** for presentation in spreadsheet applications (Microsoft Excel, Google Sheets, LibreOffice Calc).  
