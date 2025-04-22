@@ -1,6 +1,6 @@
 # AtomCrawler
 
-![ATOMCRAWLER-LOGO](https://github.com/XRayBinary/assets/blob/main/AtomCrawler.png)
+![ATOMCRAWLER-LOGO](https://github.com/SpinBath/assets/blob/main/AtomCrawler-Logo.png)
 
 ## About the project
 
