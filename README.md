@@ -4,9 +4,6 @@
 
 ## About the project
 
-> [!IMPORTANT]  
-> Under Development.
-
 AtomCrawler is an application that collects data from different nuclear reactors worldwide, generates new data based on the information already gathered, and conducts analyses to present the processed information through graphs and files.
 	
 <hr>
