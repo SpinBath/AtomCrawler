@@ -4,7 +4,11 @@
 
 ## About the project
 
-AtomCrawler is an application that collects data from different nuclear reactors worldwide, generates new data based on the information already gathered, and conducts analyses to present the processed information through graphs and files.
+AtomCrawler is an ETL tool developed in Python that performs web scraping on the official PRIS (Power Reactor Information System) website to collect data on all nuclear reactors around the world.
+
+It extracts, processes, and loads the collected data, which is then used to generate visualizations such as: Countries with the highest number of nuclear reactors or Gross capacity (MWe), among others.
+
+Additionally, it exports the processed data to various file formats, such as CSV or XML.
 	
 <hr>
 
